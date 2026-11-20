@@ -1,3 +1,21 @@
+import fs from 'fs';
+import path from 'path';
+
+// Load .env file into process.env if present
+if (fs.existsSync('.env')) {
+  const envContent = fs.readFileSync('.env', 'utf-8');
+  for (const line of envContent.split('\n')) {
+    const trimmed = line.trim();
+    if (trimmed && !trimmed.startsWith('#') && trimmed.includes('=')) {
+      const [key, ...rest] = trimmed.split('=');
+      const val = rest.join('=').trim().replace(/^["']|["']$/g, '');
+      if (key && !process.env[key.trim()]) {
+        process.env[key.trim()] = val;
+      }
+    }
+  }
+}
+
 // Verification test script for StudyMate AI API handlers
 import chatHandler from './api/chat.js';
 import summarizeHandler from './api/summarize.js';
