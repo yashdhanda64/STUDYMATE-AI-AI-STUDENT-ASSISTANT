@@ -1,0 +1,122 @@
+import { GoogleGenAI } from '@google/genai';
+
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed. Use POST.' });
+  }
+
+  try {
+    const {
+      topic = 'Operating Systems',
+      subject = 'Computer Science',
+      count = 6,
+      notes = ''
+    } = req.body || {};
+
+    const numCards = Math.min(Math.max(parseInt(count, 10) || 6, 3), 20);
+
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey || apiKey === 'your_gemini_api_key_here') {
+      return res.status(200).json({
+        deckTitle: `${topic} Flashcards`,
+        subject,
+        isDemo: true,
+        flashcards: [
+          {
+            question: 'What is the critical difference between a Process and a Thread?',
+            answer: 'A process is an executing program with its own dedicated memory space, whereas a thread is a lightweight execution unit within a process that shares memory and resources with other threads in the same process.',
+            subject
+          },
+          {
+            question: 'What are the four Coffman conditions necessary for a Deadlock to occur?',
+            answer: '1. Mutual Exclusion\n2. Hold and Wait\n3. No Preemption\n4. Circular Wait',
+            subject
+          },
+          {
+            question: 'What is Belady\'s Anomaly in Paging and Virtual Memory?',
+            answer: 'Belady\'s Anomaly is the phenomenon in which increasing the number of page frames results in an increase in the number of page faults for certain memory access patterns, commonly observed in FIFO page replacement.',
+            subject
+          },
+          {
+            question: 'What is the purpose of Virtual Memory and the TLB (Translation Lookaside Buffer)?',
+            answer: 'Virtual memory allows execution of processes that may not be completely in physical memory. The TLB is a high-speed hardware cache used to speed up virtual-to-physical address translations.',
+            subject
+          },
+          {
+            question: 'What is a Semaphore and how does a Counting Semaphore differ from a Mutex?',
+            answer: 'A semaphore is a synchronization variable used to control access to shared resources. A Mutex is binary (0 or 1) with ownership semantics, while a Counting semaphore maintains an integer count of available resources.',
+            subject
+          },
+          {
+            question: 'What is Thrashing in Operating Systems?',
+            answer: 'Thrashing occurs when a computer\'s virtual memory subsystem is in a constant state of paging, spending more time swapping pages in and out than executing instructions, causing overall system throughput to collapse.',
+            subject
+          }
+        ].slice(0, numCards)
+      });
+    }
+
+    const ai = new GoogleGenAI({ apiKey });
+
+    const notesContext = notes ? `Reference Notes to convert into flashcards:\n"""${notes.slice(0, 15000)}"""\n` : '';
+
+    const prompt = `You are an academic flashcard creator specializing in active recall and spaced repetition for university students.
+Generate ${numCards} high-yield revision flashcards for:
+Subject: "${subject}"
+Topic / Deck: "${topic}"
+
+${notesContext}
+
+Return a strictly valid JSON object with the key "flashcards", which is an array of objects:
+[
+  {
+    "question": "Clear, focused question or conceptual trigger",
+    "answer": "Concise, precise, high-scoring answer (bullet points or 2-3 sentences)",
+    "subject": "${subject}"
+  }
+]
+
+Ensure questions target key definitions, core formulas, distinctions, mechanisms, and high-frequency exam points.
+Output ONLY raw JSON with no markdown wrapping.`;
+
+    let rawText = '';
+    try {
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: prompt,
+        config: {
+          responseMimeType: 'application/json',
+          temperature: 0.4,
+        }
+      });
+      rawText = response.text;
+    } catch (e) {
+      const fallbackResponse = await ai.models.generateContent({
+        model: 'gemini-1.5-flash',
+        contents: prompt,
+        config: {
+          responseMimeType: 'application/json',
+          temperature: 0.4,
+        }
+      });
+      rawText = fallbackResponse.text;
+    }
+
+    let cleaned = rawText.trim();
+    if (cleaned.startsWith('```json')) cleaned = cleaned.replace(/^```json/, '').replace(/```$/, '').trim();
+    else if (cleaned.startsWith('```')) cleaned = cleaned.replace(/^```/, '').replace(/```$/, '').trim();
+
+    const parsed = JSON.parse(cleaned);
+
+    return res.status(200).json({
+      deckTitle: `${topic} Flashcards`,
+      subject,
+      flashcards: parsed.flashcards || parsed
+    });
+  } catch (error) {
+    console.error('API /api/generate-flashcards error:', error);
+    return res.status(500).json({
+      error: error.message || 'Failed to generate flashcards with Gemini AI.'
+    });
+  }
+}
