@@ -1,10 +1,14 @@
 # 🎓 StudyMate AI – Your Smart Learning Partner
 
+[![Live Demo on Vercel](https://img.shields.io/badge/Live%20Demo-studymate--ai-blueviolet?style=for-the-badge&logo=vercel)](https://studymate-ai-student-assistant.vercel.app)
 [![Vercel Deployment](https://img.shields.io/badge/Deploy-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com)
-[![Google Gemini API](https://img.shields.io/badge/AI-Google%20Gemini%202.5-4285F4?style=for-the-badge&logo=google)](https://aistudio.google.com)
+[![Google Gemini API](https://img.shields.io/badge/AI-Google%20Gemini-4285F4?style=for-the-badge&logo=google)](https://aistudio.google.com)
 [![Supabase Database](https://img.shields.io/badge/Database-Supabase%20PostgreSQL-3ECF8E?style=for-the-badge&logo=supabase)](https://supabase.com)
 [![React Vite](https://img.shields.io/badge/Frontend-React%2018%20%2B%20Vite-61DAFB?style=for-the-badge&logo=react)](https://vitejs.dev)
 [![Tailwind CSS](https://img.shields.io/badge/Design-Tailwind%20CSS-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com)
+
+**Live Web Application:** [https://studymate-ai-student-assistant.vercel.app](https://studymate-ai-student-assistant.vercel.app)  
+**Author:** Yash Dhanda (B.Tech Computer Science & Engineering)
 
 **StudyMate AI** is a production-grade, AI-powered student productivity and exam acceleration platform crafted specifically for university engineering and technology students (2nd-year B.Tech CSE/IT portfolio). 
 
